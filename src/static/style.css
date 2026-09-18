@@ -1,0 +1,14 @@
+html {
+    background: #f3f1ef;
+    padding: 1rem;
+}
+
+body { 
+    font-family: "Libre Baskerville";
+    background: #f3f1ef;
+}
+
+#map {
+    width: 100%;
+    height: 300px;
+}

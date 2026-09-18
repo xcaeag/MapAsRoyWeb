@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload</title>
+    <!-- Ajout de Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('my_static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('my_static', filename='leaflet.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('my_static', filename='minimap.css') }}" />
+    <script src="{{ url_for('my_static', filename='leaflet.js') }}"></script>
+    <script src="{{ url_for('my_static', filename='minimap.js') }}"></script>
+
+    <style>
+        @font-face {
+            font-family: "Libre Baskerville";
+            src: url("{{ url_for('my_static', filename='LibreBaskerville-Regular.otf') }}");
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-5">
+        <h1 class="mb-4 text-center">...</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div id="log"></div>
+                <div id="map"></div>
+
+                <form action="{{ url_for('choose_location') }}" method="post" enctype="multipart/form-data"
+                    class="card p-4 shadow-sm">
+                    {{ form.hidden_tag() }}
+                  
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <ul class="flashes warning">
+                        {% for category, message in messages %}
+                        <li class="bg-warning {{ category }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% endwith %}
+
+                    <button type="submit" class="btn btn-primary w-100">Lancer le traitement *</button>
+
+                    <p style="font-size: small;">* Vos productions ne sont conservées que le temps de votre session, visibles par vous seul.</p>
+                </form>
+
+                {% if transformed_image %}
+                <div class="mt-4 text-center">
+                    <h2 class="h5">Transformed Image:</h2>
+                    <img src="{{ transformed_image }}" alt="Transformed Image" class="img-fluid rounded shadow">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="container py-5">
+            <a href="{{ url_for('index') }}"><button type="button" class="btn btn-success">Accueil</button></a>
+        </div>
+        <!-- Bootstrap JS (optionnel) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+            var map = L.map('map').setView([43.2829, -1.3309], 10.0);
+
+            // base layers definitions
+            var baseLayers = {
+                osm_standard: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }),
+            };
+
+            var currentBase = baseLayers['osm_standard'];
+            currentBase.addTo(map);
+                                    
+            // replaced dragend listener with continuous move/zoom listeners + throttling
+            var rect = null;
+            var rafScheduled = false;
+
+            function updateInfo() {
+                const proj = L.CRS.EPSG3857;
+
+                var center = map.getCenter();
+                var bounds = map.getBounds();
+
+                // Degrees to 3857
+                var centerM = proj.project(center);
+                var sw = new L.LatLng(bounds.getSouth(), bounds.getWest());
+                var swM = proj.project(sw);
+                var neM = proj.project(new L.LatLng(bounds.getNorth(), bounds.getEast()))
+
+                var widthM = Math.abs(swM.x - neM.x);
+                var heightM = Math.abs(neM.y - swM.y);
+
+                var fxy = widthM / heightM;
+                var dd = widthM / 4;
+                if (fxy > 1) 
+                    dd = heightM / 4;
+
+                var xmin = centerM.x - dd;
+                var xmax = centerM.x + dd;
+                var ymin = centerM.y - dd;
+                var ymax = centerM.y + dd;
+
+                // Metres to degrees
+                var sw4326 = proj.unproject(new L.Point(xmin, ymin)); 
+                var ne4326 = proj.unproject(new L.Point(xmax, ymax)); 
+
+                document.getElementById("xmin").value = sw4326.lng;
+                document.getElementById("ymin").value = sw4326.lat;
+                document.getElementById("xmax").value = ne4326.lng;
+                document.getElementById("ymax").value = ne4326.lat;
+
+                if (!rect) {
+                    rect = L.rectangle([[sw4326.lat, sw4326.lng], [ne4326.lat, ne4326.lng]], { color: "#ff7800", weight: 1 }).addTo(map);
+                } else {
+                    rect.setBounds([[sw4326.lat, sw4326.lng], [ne4326.lat, ne4326.lng]]);
+                }
+            }
+
+            // Throttled continuous updates during pan/zoom
+            map.on('move', function () {
+                if (!rafScheduled) {
+                    rafScheduled = true;
+                    requestAnimationFrame(function () {
+                        updateInfo();
+                        rafScheduled = false;
+                    });
+                }
+            });
+
+            // Ensure final state is updated after end of movement/zoom
+            map.on('moveend', updateInfo);
+            map.on('zoomend', updateInfo);
+
+    updateInfo();
+
+                </script>
+
+</body>
+
+</html>

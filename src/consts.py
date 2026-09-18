@@ -1,0 +1,6 @@
+BASE_URL_FOLDER = "/mapasroy"
+TMP_FOLDER = "/tmp/mapasroy"
+TEMPLATE_QGIS = "/app/static/roy.qgs"
+SECRET_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+PYTHON_CMD = "python3"
+PREFIX_PATH = "/usr/bin/qgis"

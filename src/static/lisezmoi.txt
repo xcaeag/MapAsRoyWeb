@@ -1,0 +1,9 @@
+Map as Roy
+=================================
+
+Votre carte au style "Roy Lichtenstein" (https://en.wikipedia.org/wiki/Roy_Lichtenstein)
+
+Sources : https://github.com/xcaeag/MapAsRoyWeb
+Outil en ligne : https://carto.geum.fr/mapasroy
+Données : https://www.openstreetmap.org/copyright
+

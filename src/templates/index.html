@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAP as Roy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <style>
+        @font-face {
+            font-family: "Libre Baskerville";
+            src: url("{{ url_for('my_static', filename='LibreBaskerville-Regular.otf') }}");
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('my_static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container py-5">
+        <h1 class="mb-4 text-center">Des cartes stylées "Roy Lichtenstein"</h1>
+        <div class="container mt-5">
+            <div class="container mt-3">
+                <h3>Qu'est-ce ?</h3>
+                <p>Un outil interactif pour produire des cartes au style <a
+                        href="https://en.wikipedia.org/wiki/Roy_Lichtenstein">"Roy Lichtenstein"</a> d'un lieu
+                    quelconque, tableau d'un bout de carte <a href="https://www.openstreetmap.org/"
+                        target="_blank">OSM</a></p>
+                <p>A télécharger : l'image au format JPG, SVG</p>
+                <h3>Exemples</h3>
+
+                <figure class="figure w-25">
+                    <img src="{{ url_for('my_static', filename='kiev.png' ) }}" class="figure-img img-thumbnail rounded"
+                        alt="L'image produite">
+                    <figcaption class="figure-caption text-center">Kiev</figcaption>
+                </figure>
+                <figure class="figure w-25">
+                    <img src="{{ url_for('my_static', filename='elsinki.png' ) }}"
+                        class="figure-img img-thumbnail rounded" alt="Elsinki">
+                    <figcaption class="figure-caption text-center">Elsinki</figcaption>
+                </figure>
+                <figure class="figure w-25">
+                    <img src="{{ url_for('my_static', filename='beyrouth.png' ) }}"
+                        class="figure-img img-thumbnail rounded" alt="Beyrouth">
+                    <figcaption class="figure-caption text-center">Beyrouth</figcaption>
+                </figure>
+
+                <h3>Comment ça marche ?</h3>
+                <p>Techniquement, ce petit site web en Python/Flask, un QGis, le tout sous docker.</p>
+                <p>Lorsque vous validez le formulaire, c'est un bout de script Python qui exploite l'API QGis pour
+                    produire la carte, l'archive.</p>
+                <p>Ce sont les tuiles vectorielles <a
+                        href="https://vector.openstreetmap.org/shortbread_v1/{z}/{x}/{y}.mvt" target="_blank">OSM</a>
+                    qui sont exploitées + un style QGis maison que voilà : <a href="./my_static/roy.qml"
+                        target="_blank">roy.qml</a></p>
+                <p>Le code, pas si joli (!), ici : <a href="https://github.com/xcaeag/MapAsRoyWeb"><i
+                            class="bi bi-git"></i> https://github.com/xcaeag/MapAsRoyWeb </a></p>
+            </div>
+
+            <div class="mb-4 text-center"><a href="{{ url_for('choose_location') }}"><button type="button"
+                        class="btn btn-lg btn-outline-dark">Essayer !</button></a></div>
+
+            {% if jobs %}
+
+            <div class="container mt-3">
+                <h3>Vos cartes :</h3>
+            </div>
+            {% for uuid, job in jobs.items() %}
+            <div class="container mt-3">
+                {% if (job.status == "done") %}
+                <figure class="figure w-25">
+                    {{ job.datestr }}<br>
+                    <img src="{{ url_for('uuid_image', uuid=uuid, filename='map.jpg' ) }}"
+                        class="figure-img img-thumbnail rounded" alt="La carte">
+                    <figcaption class="figure-caption text-center">La carte</figcaption>
+                </figure>
+                <figure class="figure w-25">
+                    <img src="{{ url_for('uuid_image', uuid=uuid, filename='zoom.jpg' ) }}"
+                        class="figure-img img-thumbnail rounded" alt="Un détail">
+                    <figcaption class="figure-caption text-center">Un zoom</figcaption>
+                </figure>
+                {% elif (job.status == "error") %}
+                Traitement en erreur <p>{{ job.message }} </p>
+                {% elif (job.status == "processing") %}
+                Traitement en cours <p>{{ job.message }} </p>
+                {% endif %}
+                <figure class="figure align-top">
+                    <br>
+                    <a href="{{ url_for('download_archive', uuid=uuid) }}" alt="Télécharger"><button type="button"
+                            class="btn btn-success"><i class="bi bi-box-arrow-down">&nbsp;</i></button></a>
+                    <br><br>
+                    <a href="{{ url_for('remove_archive', uuid=uuid) }}" alt="Supprimer"><button type="button"
+                            class="btn btn-danger"><i class="bi bi-trash">&nbsp;</i></button></a>
+                </figure>
+
+            </div>
+            {% endfor %}
+            {% endif %}
+
+        </div>
+    </div>
+    <!-- Bootstrap JS (optionnel) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,16 @@
+
+services:
+
+  mapasroy:
+    image: offscreen_qgis_script
+    container_name: mapasroy
+    restart: unless-stopped
+    volumes:
+     - ../src:/app
+    ports:
+      - 5000:5000
+    networks:
+     - qgis-net
+
+networks:
+  qgis-net:
