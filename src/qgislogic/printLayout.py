@@ -35,7 +35,6 @@ qgsapp = None
 
 def qgisInitOffscreen(installPath):
     global qgsapp
-    global prj
 
     os.environ["QT_QPA_PLATFORM"] = "offscreen"
     QgsApplication.setPrefixPath(sys.prefix, True)
