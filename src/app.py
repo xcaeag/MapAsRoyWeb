@@ -22,14 +22,18 @@ from consts import (
 
 sys.path.append("/usr/share/qgis/python/plugins")
 
+from flask_session import Session
+import redis
+
 app = Flask(__name__)
-app.secret_key = SECRET_KEY
-app.config["SESSION_PERMANENT"] = True
-app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_FILE_THRESHOLD"] = 100  # 500 is default
+app.config["SECRET_KEY"] = "shdiuhoqcnqisjqsicuq"
+app.config["SESSION_TYPE"] = "redis"
+app.config["SESSION_REDIS"] = redis.from_url("redis://redis:6379/0")
+Session(app)
+
 
 logging.basicConfig(
-    filename="./log/flask.log",
+    filename="/var/log/flask.log",
     level=logging.DEBUG,
     format="%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s",
 )
